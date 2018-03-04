@@ -5,6 +5,7 @@ from messages import *
 
 import unicodedata
 import re
+import requests
 import time
 import logging
 import threading
@@ -38,9 +39,10 @@ def reply(msg):
 @bot.register()
 def reply_others(msg):
     print('reply_others')
-    print(msg.raw)
+    # print(msg)
+    # print(msg.raw)
     content = re.sub('@[^\s]*', '', unicodedata.normalize('NFKC', msg.text)).strip()
-    print(content)
+    # print(content)
     if msg.type == 'Picture':
         try:
             res = requests.get(emotions_reply(content[:-4]), allow_redirects=False)
@@ -54,6 +56,18 @@ def reply_others(msg):
         except Exception as error:
             print(error)
             msg.reply("本机器人没有找到相关表情~使用文字回复：\n" + tuling_reply(content, msg.member.puid))
+    elif msg.type == 'Sharing':
+        print(msg)
+        print(type(msg.raw))
+        # url
+        regx = re.compile('<url>(\S+)</url>')
+        result = regx.findall(msg.raw['Content'])
+        print(result)
+        # if result[0].startwith('http'):
+        r = requests.get(result[0])
+        res = r.text
+        print(res)
+        # result = json.loads(res).get('text').replace('<br>', '\n')
     else:
         return tulingChat(msg.text, msg.sender.puid)
 
